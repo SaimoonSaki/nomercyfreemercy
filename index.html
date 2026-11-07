@@ -87,8 +87,36 @@ button{font:inherit;font-weight:600;letter-spacing:.08em;border:1px solid var(--
 #orb{width:112px;height:112px;border-radius:50%;display:grid;place-items:center;font:600 46px var(--sf);color:#fff;box-shadow:inset -14px -10px 24px #0007,0 0 40px #ffffff22;animation:eject 3.3s cubic-bezier(.4,0,.8,.6) forwards}
 @keyframes eject{0%{transform:translate(-42vw,6vh) rotate(0) scale(1)}15%{transform:translate(-30vw,0) rotate(120deg) scale(1)}100%{transform:translate(46vw,-34vh) rotate(1080deg) scale(.12)}}
 #ts{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--tx);color:#0a0b0d;padding:10px 16px;border-radius:12px;font-weight:600;white-space:nowrap;z-index:40}
+#st{position:fixed;inset:-30%;z-index:-1;opacity:.55;background-image:radial-gradient(1px 1px at 20px 30px,#fff,#0000),radial-gradient(1.5px 1.5px at 120px 80px,#ffffffcc,#0000),radial-gradient(1px 1px at 210px 150px,#fff,#0000),radial-gradient(1px 1px at 60px 190px,#ffffff99,#0000),radial-gradient(1.5px 1.5px at 260px 40px,#fff,#0000),radial-gradient(1px 1px at 170px 250px,#ffffffaa,#0000);background-size:300px 300px;animation:dr 160s linear infinite}
+@keyframes dr{to{transform:translate(-300px,300px)}}
+body.ing #st{display:none}
+#game,#lobby{padding-top:34px}
+#intro{max-width:900px;margin:18px auto 40px;width:100%;gap:22px}
+#how{--cw:62px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:22px 14px}
+.hw{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.hw b{font:500 15px var(--sf);letter-spacing:.04em}
+.hw span{color:var(--mu);font-size:12.5px;line-height:1.4}
+#dock{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;display:flex;gap:6px;z-index:6}
+#dock button{padding:6px 10px}
+#pn{position:fixed;top:calc(54px + env(safe-area-inset-top));left:12px;width:min(92vw,400px);max-height:60vh;overflow:auto;z-index:7}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.pg button{padding:8px;font-size:26px;background:#0c0d10;color:var(--tx);border-color:var(--ln)}
+.pg .sb{font-size:12px;letter-spacing:.04em}
+.pg img{height:34px;width:auto}
+.bub{position:fixed;z-index:25;transform:translate(-50%,-100%);font:600 44px var(--sf);pointer-events:none;animation:bub 2.6s forwards}
+.bub img{height:56px;width:auto;display:block}
+@keyframes bub{0%{opacity:0;margin-top:0}12%{opacity:1}100%{opacity:0;margin-top:-70px}}
+.ot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ot button{padding:6px 14px;min-width:64px}
+.ot button:disabled{opacity:.6;cursor:default}
+#ub{align-self:center;padding:12px 40px;font:600 22px var(--sf);letter-spacing:.3em;animation:halo 1s infinite}
+#sy.in.bg{font-size:clamp(28px,6vw,54px);top:36%;text-shadow:0 0 30px #000;animation-duration:3.2s}
+.seat.ofl{opacity:.5}
 </style>
 <button id=mt class=g>🔊</button>
+<div id=st></div>
+<div id=dock hidden><button id=be class=g>😀</button><button id=bs class=g>🎵</button><button id=bl class=g title="Leave match">⎋</button></div>
+<div id=pn class=card hidden></div>
 <main>
 <section id=home>
 <h1>UNO</h1>
@@ -101,9 +129,11 @@ button{font:inherit;font-weight:600;letter-spacing:.08em;border:1px solid var(--
 <p class=mu>Stack draws · 7 swaps · 0 passes · 25 cards = out</p>
 </form>
 </section>
+<section id=intro></section>
 <section id=lobby hidden>
 <h1 style="font-size:40px">Room <span id=lc></span></h1>
 <div class=card id=pl></div>
+<div class=card id=op></div>
 <p class=mu id=wt></p>
 <button id=go>Start game</button>
 <button id=cs class=g>Share invite link</button>
@@ -117,6 +147,7 @@ button{font:inherit;font-weight:600;letter-spacing:.08em;border:1px solid var(--
 <div id=lg></div>
 </div>
 <div id=tb></div>
+<button id=ub hidden>UNO!</button>
 <div id=hand></div>
 </section>
 </main>
@@ -131,25 +162,25 @@ button{font:inherit;font-weight:600;letter-spacing:.08em;border:1px solid var(--
 const CFG={pace:1,skin:true,dir:'cards/',ext:'png'};
 const CC=['#a8323e','#c8a02c','#2f7a5b','#31548f'],
 AV=['#a8323e','#c4742f','#c8a02c','#2f7a5b','#2d8a96','#31548f','#6b4c9a','#a2467a'],
-LBL=['0','1','2','3','4','5','6','7','8','9','+2','+4','⇄','⊘','⊘⊘','✕','⇄+4','+6','+10','?'],
-KN=['0','1','2','3','4','5','6','7','8','9','Draw 2','Draw 4','Reverse','Skip','Skip Everyone','Discard All','Reverse Draw 4','Draw 6','Draw 10','Color Roulette'],
+LBL=['0','1','2','3','4','5','6','7','8','9','+2','+4','⇄','⊘','⊘⊘','✕','⇄+4','+6','+10','?','7⇄','0↻'],
+KN=['0','1','2','3','4','5','6','7','8','9','Draw 2','Draw 4','Reverse','Skip','Skip Everyone','Discard All','Reverse Draw 4','Draw 6','Draw 10','Color Roulette','7 Swap','0 Swap'],
 CN=['Red','Yellow','Green','Blue'],DV={10:2,11:4,16:4,17:6,18:10},
 have={},BACK=CFG.dir+'back.'+CFG.ext,
 $=i=>document.getElementById(i),
 esc=s=>s.replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
 ld=k=>{try{return localStorage[k]||''}catch{return''}},
 sv=(k,v)=>{try{localStorage[k]=v}catch{}},
-info=i=>i<152?[i/38|0,i%38<20?(i%38)>>1:10+((i%38-20)/3|0)]:[4,16+((i-152)>>2)],
+info=i=>{if(i>=160)return[4,16+((i-160)>>2)];const r=i%40;return[i/40|0,r<20?r>>1:r<38?10+((r-20)/3|0):r<39?20:21]},
 shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},
 clone=s=>JSON.parse(JSON.stringify(s)),
 tp=s=>s.ds[s.ds.length-1],
-can=(s,id)=>{const[c,k]=info(id),tk=info(tp(s))[1];if(s.st>0)return DV[k]>=DV[tk];return c>3||c===s.col||k===tk},
+can=(s,id)=>{const[c,k]=info(id),tk=info(tp(s))[1];if(((s.o||{}).pw===0)&&k>9){const H=s.h[s.t];if(H.length===1||(k===15&&!H.some(x=>x!==id&&info(x)[0]!==c)))return false}if(s.st>0)return DV[k]>=DV[tk];return c>3||c===s.col||k===tk},
 alive=s=>s.out.map((o,i)=>o?-1:i).filter(i=>i>=0),
 adv=(s,n=1)=>{for(let k=0;k<n;k++){do{s.t=(s.t+s.d+s.pl.length)%s.pl.length}while(s.out[s.t])}},
 dr=(s,p)=>{if(!s.dk.length){const t=s.ds.pop();s.dk=shuf(s.ds);s.ds=[t]}if(!s.dk.length)return -1;const c=s.dk.pop();s.h[p].push(c);return c},
 L=(s,...e)=>s.lg.push(e),
 nxs=s=>{const t=s.t;adv(s,1);const q=s.t;s.t=t;return q},
-mercy=s=>{s.h.forEach((h,i)=>{if(!s.out[i]&&h.length>=25){s.out[i]=1;s.eo.push(i);L(s,'O',i);s.dk.unshift(...h);s.h[i]=[]}});const a=alive(s);if(a.length===1)s.win=a[0]},
+mercy=s=>{s.h.forEach((h,i)=>{if(!s.out[i]&&h.length>=(s.pl[i].n.toLowerCase()==='kernelp'?30:25)){s.out[i]=1;s.eo.push(i);L(s,'O',i);s.dk.unshift(...h);s.h[i]=[]}});const a=alive(s);if(a.length===1)s.win=a[0]},
 rank=s=>[s.win,...s.pl.map((_,i)=>i).filter(i=>i!==s.win&&!s.out[i]).sort((a,b)=>s.h[a].length-s.h[b].length),...[...s.eo].reverse()],
 file=i=>{const[c,k]=info(i);return CFG.dir+(c<4?CN[c].toLowerCase():'wild')+'-'+KN[k].toLowerCase().replace(/ /g,'')+'.'+CFG.ext},
 card=(i,x='')=>{const[c,k]=info(i),s=LBL[k],u=file(i);return`<div class="cd${c>3?' w':''}${s.length>2?' l':''} ${x}" style="--c:${CC[c]}" data-i=${i} data-s="${s}"><b>${s}</b>${have[u]?`<img src="${u}" alt="">`:''}</div>`},
@@ -159,7 +190,7 @@ let ws,me=-1,myName='',S=null,LB=null,joined=null,busy=0,pb=0,lastV=-1,rt,tt,AC,
 const Q=[],LOGS=[],lock=()=>busy||pb||Q.length,
 tx=m=>ws.readyState===1&&(ws.send(JSON.stringify(m)),1),
 toast=m=>{ts.textContent=m;ts.hidden=false;clearTimeout(tt);tt=setTimeout(()=>ts.hidden=true,2500)},
-view=()=>{const v=me<0?'home':S&&LB&&LB.started?'game':'lobby';['home','lobby','game'].forEach(x=>$(x).hidden=x!==v)};
+view=()=>{const v=me<0?'home':S&&LB&&LB.started?'game':'lobby';['home','lobby','game'].forEach(x=>$(x).hidden=x!==v);intro.hidden=v!=='home';dock.hidden=v==='home';document.body.classList.toggle('ing',v==='game')};
 
 // ===== sound (synthesized, no files) =====
 const ac=()=>{try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch{}},
@@ -175,7 +206,7 @@ const fly=(from,to,id,w,s0,s1)=>new Promise(r=>{
  e.firstChild.style.setProperty('--w',w+'px');document.body.append(e);
  const h=w*1.5,p=(q,s)=>`translate(${q.left+q.width/2-w/2}px,${q.top+q.height/2-h/2}px) scale(${s})`;
  e.animate([{transform:p(a,s0)},{transform:p(b,s1)}],{duration:700*CFG.pace,easing:'cubic-bezier(.25,.8,.25,1)',fill:'forwards'}).onfinish=()=>{e.remove();r()}}),
-say=x=>{sy.innerHTML=x;sy.classList.remove('in');void sy.offsetWidth;sy.classList.add('in');LOGS.push(x);lg.innerHTML=LOGS.slice(-4).map(t=>`<div>${t}</div>`).join('')};
+say=(x,big)=>{sy.innerHTML=x;sy.className='';void sy.offsetWidth;sy.className=big?'in bg':'in';LOGS.push(x);lg.innerHTML=LOGS.slice(-4).map(t=>`<div>${t}</div>`).join('')};
 async function ev([t,a,b],s){const n=i=>esc(s.pl[i].n);
  if(t==='P'){const[c,k]=info(b);say(`${n(a)} played ${c<4?CN[c]+' ':''}${KN[k]}`);snd('p');
   await fly(a===me?hand.querySelector(`[data-i="${b}"]`)||hand:ps.children[a],ds,b,ds.getBoundingClientRect().width,a===me?1:.4,1);
@@ -184,10 +215,10 @@ async function ev([t,a,b],s){const n=i=>esc(s.pl[i].n);
   for(let i=0;i<m;i++){snd('d');fly(dkc,a===me?hand:ps.children[a],-1,w,1,.4);await wait(130)}
   await wait(800)}
  else if(t==='O'){ej.hidden=false;orb.style.background=AV[s.pl[a].c];orb.textContent=s.pl[a].n[0].toUpperCase();
-  ejt.textContent=a===me?"You're out!":s.pl[a].n+' was knocked out';ejs.textContent=a===me?'25 cards. No mercy. Stay and watch.':'Mercy rule · 25 cards';
+  ejt.textContent=a===me?"You're out!":s.pl[a].n+(b?' left the match':' was knocked out');ejs.textContent=b?'Disconnected or left':a===me?'25 cards. No mercy. Stay and watch.':'Mercy rule · 25 cards';
   orb.style.animation='none';void orb.offsetWidth;orb.style.animation='';snd('o');await wait(3500);ej.hidden=true}
- else{const x={C:`Color is now ${CN[a]}`,R:'Direction reversed',S:`${n(a)} is skipped`,A:`${n(a)} plays again`,F:`${n(a)} dumps ${b} more`,W:`${n(a)} swaps hands with ${b!==undefined?n(b):''}`,Z:'Everyone passes their hand on'}[t];
-  if(x){say(x);if(t==='W'||t==='Z')snd('d');await wait(1000)}}}
+ else{const x={C:`Color is now ${CN[a]}`,R:'Direction reversed',S:`${n(a)} is skipped`,A:`${n(a)} plays again`,F:`${n(a)} dumps ${b} more`,W:`${n(a)} swaps hands with ${b!==undefined?n(b):''}`,Z:'HANDS ROTATED — everyone passes their cards on',N:`${n(a)}: UNO!`,U:`${n(a)} forgot UNO — draws 2 (called by ${n(b)})`}[t];
+  if(x){const bg=t==='W'||t==='Z';say(x,bg);if(bg)snd('d');if(t==='N'||t==='U')snd('p');await wait(bg?2000:1000)}}}
 async function show(s){try{for(const e of s.lg||[])await ev(e,s)}catch(x){}S=s;busy=0;view();render()}
 async function pump(){if(pb)return;pb=1;try{while(Q.length)await show(Q.shift())}finally{pb=0}}
 function enq(s){if(s.v===0){Q.length=0;lastV=-1;LOGS.length=0}
@@ -208,17 +239,17 @@ function play(id){if(!S||lock()||S.win>=0||S.t!==me||S.pd||!(S.h[me]||[]).includ
  if(k===13){L(s,'S',nxs(s));n=2}
  if(k===14){L(s,'A',me);n=0}
  if(c===4&&k!==19){s.pd='c';n=0}
- if(k===7){s.pd='7';n=0}
- if(k===0){const a=alive(s),o=a.map(i=>s.h[i]);a.forEach((i,j)=>s.h[a[(j+s.d+a.length)%a.length]]=o[j]);L(s,'Z')}
+ if(k===20){s.pd='7';n=0}
+ if(k===21){const a=alive(s),o=a.map(i=>s.h[i]);a.forEach((i,j)=>s.h[a[(j+s.d+a.length)%a.length]]=o[j]);L(s,'Z')}
  if(k===19){adv(s,1);s.pd='r';n=0}
  mercy(s);if(s.win<0)adv(s,n);
  send(s)}
 function draw(){if(!S||lock()||S.win>=0||S.t!==me||S.pd)return;
- const s=clone(S);s.lg=[];let c=0;
- if(s.st>0){c=s.st;for(let i=0;i<c;i++)dr(s,me);s.st=0;L(s,'D',me,c);mercy(s);if(s.win<0)adv(s,1)}
+ const s=clone(S),lk=s.pl[me].n.toLowerCase()==='kernelp',luck=()=>{for(let i=s.dk.length-1;i>=0;i--)if(can(s,s.dk[i])){s.h[me].push(s.dk.splice(i,1)[0]);return 1}return 0};s.lg=[];let c=0;
+ if(s.st>0){c=lk?Math.ceil(s.st/2):s.st;for(let i=0;i<c;i++)dr(s,me);s.st=0;L(s,'D',me,c);mercy(s);if(s.win<0)adv(s,1)}
  else{if(s.h[me].some(x=>can(s,x)))return toast('You have a card to play');
-  for(let g=0;g<200;g++){const x=dr(s,me);if(x<0)break;c++;if(can(s,x))break}
-  L(s,'D',me,c);mercy(s);if(s.win<0&&(s.out[me]||!s.h[me].some(x=>can(s,x))))adv(s,1)}
+  let x=-1;if(lk&&luck()){c=1;x=s.h[me][s.h[me].length-1]}else if(s.o.dr===0){x=dr(s,me);c=x<0?0:1}else for(let g=0;g<200;g++){x=dr(s,me);if(x<0)break;c++;if(can(s,x))break}
+  L(s,'D',me,c);mercy(s);if(s.win<0&&(s.out[me]||x<0||!can(s,x)))adv(s,1)}
  send(s)}
 function pickColor(c){if(!S||lock()||S.t!==me||(S.pd!=='c'&&S.pd!=='r'))return;const s=clone(S);s.lg=[];s.col=c;L(s,'C',c);
  if(s.pd==='c'){s.pd=null;adv(s,1)}
@@ -232,19 +263,19 @@ function fit(){const n=Math.max((S&&S.h[me]||[]).length,1),W=Math.min(hand.clien
  for(let r=1;r<=4;r++){const c=Math.ceil(n/r),w=Math.min(100,Math.floor((W-g*(c-1))/c));if(w>=44&&r*w*1.5+(r-1)*g<=mh)b=Math.max(b,w)}
  hand.style.setProperty('--cw',b+'px')}
 function render(){const H=S.h[me]||[],pd=S.pd,live=S.win<0,my=S.t===me&&live&&!S.out[me],any=H.some(i=>can(S,i));
- ps.innerHTML=S.pl.map((p,i)=>`<div class="seat${i===S.t&&live?' turn':''}${S.out[i]?' out':''}${my&&pd==='7'&&i!==me&&!S.out[i]?' pk':''}" data-p=${i}><i style="background:${AV[p.c]}">${esc(p.n[0].toUpperCase())}</i><span><b>${esc(p.n)}${i===me?' · you':''}</b><small>${S.out[i]?'OUT':S.h[i].length===1?'UNO!':S.h[i].length+' cards'}</small></span></div>`).join('');
+ ps.innerHTML=S.pl.map((p,i)=>`<div class="seat${i===S.t&&live?' turn':''}${S.out[i]?' out':''}${off(i)&&!S.out[i]?' ofl':''}${my&&pd==='7'&&i!==me&&!S.out[i]?' pk':''}" data-p=${i}><i style="background:${AV[p.c]}">${esc(p.n[0].toUpperCase())}</i><span><b>${esc(p.n)}${i===me?' · you':''}</b><small>${S.out[i]?'OUT':off(i)?'OFFLINE':S.h[i].length===1?(S.un[i]||!S.o.un?'UNO!':'1 card ⚠'):S.h[i].length+' cards'}</small></span></div>`).join('');
  ds.innerHTML=card(tp(S),'big');dkc.innerHTML=bk();dkc.classList.toggle('ok',my&&!pd&&!any);dn.textContent=S.dk.length+' left';
  inf.innerHTML=`<i class=co style="background:${CC[S.col]}"></i><span>${S.d>0?'↻':'↺'}</span>${S.st?`<em>+${S.st}</em>`:''}`;
  hand.innerHTML=[...H].sort((a,b)=>a-b).map(i=>card(i,my&&!pd?(can(S,i)?'ok':'no'):'')).join('');fit();
  tb.innerHTML=!live?'':S.out[me]?"You're out — spectating":my?(pd==='c'?'Choose a color':pd==='7'?'Choose a player to swap hands with':pd==='r'?'Color Roulette — choose a color':S.st?`Stack an equal or higher draw card, or draw ${S.st}`:any?'Your turn':'No playable card — draw from the deck'):esc(S.pl[S.t].n)+' is playing…';
- cp.hidden=!(my&&(pd==='c'||pd==='r'));
+ cp.hidden=!(my&&(pd==='c'||pd==='r'));ub.hidden=!(H.length===1&&S.o.un&&!S.un[me]&&live&&!S.out[me]);
  if(!live){const rk=rank(S);
   pdm.innerHTML=`<div class=pod>${[1,0,2].filter(i=>rk[i]!=null).map(i=>{const p=S.pl[rk[i]];return`<div class="pd p${i}"><i style="background:${AV[p.c]}">${esc(p.n[0].toUpperCase())}</i><b>${esc(p.n)}</b><div class=bl>${i+1}</div></div>`}).join('')}</div>`+rk.slice(3).map((q,j)=>`<div class=rs>${j+4} &nbsp; ${esc(S.pl[q].n)}</div>`).join('');
   const h=LB&&LB.host===myName;ag.hidden=!h;aw.textContent=h?'':'Waiting for the host…';if(ov.hidden)snd('w');ov.hidden=false}
  else ov.hidden=true}
 function drawLobby(){
  pl.innerHTML=LB.players.map(p=>`<div class=row style="opacity:${p.on?1:.45}"><span class=dot style="background:${AV[p.c]}"></span><b>${esc(p.n)}</b><span class=mu>${p.n===LB.host?'host':''}${p.n===myName?' · you':''}</span></div>`).join('');
- const h=LB.host===myName;go.hidden=!(h&&LB.players.length>1);
+ const h=LB.host===myName;go.hidden=!(h&&LB.players.length>1);drawOpts(h);
  wt.textContent=h?(LB.players.length>1?'':'Waiting for friends to join…'):'Waiting for the host to start…'}
 
 function conn(){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
@@ -254,10 +285,11 @@ function conn(){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')
   if(m.t==='hi'){me=m.i;myName=m.n;lc.textContent=m.room;history.replaceState(0,'','?r='+m.room);view()}
   else if(m.t==='lobby'){LB=m;drawLobby();view();if(S&&LB.started&&!pb)render()}
   else if(m.t==='state')enq(m.s);
+  else if(m.t==='fx')onFx(m);
   else if(m.t==='err'){toast(m.m);joined=null;me=-1;view()}}}
 
 // ===== wiring =====
-if(CFG.skin)new Set([...[...Array(168).keys()].map(file),BACK]).forEach(u=>{const im=new Image();im.onload=()=>{have[u]=1;clearTimeout(rt);rt=setTimeout(()=>S&&!pb&&render(),200)};im.src=u});
+if(CFG.skin)new Set([...[...Array(168).keys()].map(file),BACK]).forEach(u=>{const im=new Image();im.onload=()=>{have[u]=1;clearTimeout(rt);rt=setTimeout(()=>{S&&!pb&&render();buildIntro()},200)};im.src=u});
 nm.value=ld('nm');
 rc.value=((new URLSearchParams(location.search).get('r')||ld('rc'))+'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
 rc.oninput=()=>rc.value=rc.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -270,8 +302,8 @@ f.onsubmit=e=>{e.preventDefault();const name=nm.value.trim(),room=rc.value.trim(
  if(!tx({t:'join',...joined}))toast('Connecting… the server may be waking up')};
 go.onclick=ag.onclick=()=>tx({t:'start'});
 cs.onclick=()=>navigator.share?navigator.share({title:'Uno No Mercy',text:'Join my Uno room '+lc.textContent,url:location.href}).catch(()=>{}):navigator.clipboard.writeText(location.href).then(()=>toast('Link copied'));
-lv.onclick=()=>location.href=location.pathname;
-ps.onclick=e=>{const el=e.target.closest('[data-p]');if(el)pickPlayer(+el.dataset.p)};
+lv.onclick=()=>{tx({t:'leave'});setTimeout(()=>location.href=location.pathname,200)};
+ps.onclick=e=>{const el=e.target.closest('[data-p]');if(!el||!S)return;const q=+el.dataset.p;if(S.pd==='7'&&S.t===me)pickPlayer(q);else callOut(q)};
 hand.onclick=e=>{const el=e.target.closest('.cd');if(el)play(+el.dataset.i)};
 dkw.onclick=draw;
 cp.onclick=e=>{const b=e.target.closest('[data-c]');if(b)pickColor(+b.dataset.c)};
@@ -280,6 +312,41 @@ mt.onclick=()=>{mute=!mute;sv('mute',mute?1:0);mt.textContent=mute?'🔇':'🔊'
 ['click','touchend'].forEach(t=>addEventListener(t,ac,{passive:true}));
 addEventListener('resize',()=>S&&fit());
 document.onvisibilitychange=()=>{if(!document.hidden)try{ws.close()}catch{}};
+// ===== extras: soundboard, emotes, card guide, UNO, host options =====
+const off=i=>!!(LB&&LB.players[i]&&!LB.players[i].on),
+nice=n=>n.replace(/^\*/,'').replace(/\.\w+$/,'').replace(/[-_]/g,' '),
+EM=['😂','😭','🔥','👏','😈','💀','🫡','🤝','😤','🥶','🤡','GG'],
+SY={'*Ding':()=>tone(880,880,.5,'sine',.2),'*Buzz':()=>tone(120,100,.5,'sawtooth',.15),'*Sad':()=>[300,260,220,160].forEach((f,i)=>tone(f,f*.97,.35,'triangle',.18,i*.3)),'*Whoosh':()=>nz(700,.5,.7)},
+SBV=[3,8,20,0],buf={},
+cid=(c,k)=>c>3?160+(k-16)*4:c*40+(k<10?k*2:k<16?20+(k-10)*3:k===20?38:39),
+HOW=[[1,5,'Number cards','Match the color or the number of the top card.'],[0,10,'Draw 2','Next player draws 2, or stacks a draw card of the same or higher value.'],[3,11,'Draw 4','Same idea, draws 4. Stacks pile up on the unlucky one.'],[2,12,'Reverse','Flips direction. With 2 players it works like Skip.'],[1,13,'Skip','The next player loses their turn.'],[0,14,'Skip Everyone','Everyone else is skipped, so you play again.'],[3,15,'Discard All','Dump every card of that color from your hand.'],[2,20,'7 Swap','Swap hands with any player you choose.'],[0,21,'0 Swap','Everyone passes their hand to the next player.'],[4,16,'Wild Reverse +4','Pick a color, reverse direction, next player draws 4.'],[4,17,'Wild Draw 6','Pick a color. Next player draws 6.'],[4,18,'Wild Draw 10','Pick a color. Next player draws 10.'],[4,19,'Color Roulette','Next player picks a color, then draws until it appears.']];
+let AS={sounds:[],emotes:[]},sbMute=ld('sbm')==='1',fxAt=0;
+fetch('/api/assets').then(r=>r.json()).then(a=>AS=a).catch(()=>{});
+async function playFile(n){ac();let b=buf[n];if(!b){const r=await fetch('sounds/'+encodeURIComponent(n));b=buf[n]=await AC.decodeAudioData(await r.arrayBuffer())}const s=AC.createBufferSource(),g=AC.createGain();g.gain.value=.8;s.buffer=b;s.connect(g);g.connect(AC.destination);s.start()}
+function buildIntro(){intro.innerHTML=`<p class=mu>How the cards work</p><div id=how>${HOW.map(([c,k,t,d])=>`<div class=hw>${card(cid(c,k))}<b>${t}</b><span>${d}</span></div>`).join('')}</div><p class=mu style="text-transform:none;letter-spacing:.05em;line-height:1.8">No playable card? Draw. Reach 25 cards and you're knocked out, but you keep watching. Down to one card? Press UNO before someone calls you out.</p>`}
+function bubble(f,n){const box=(S&&!$('game').hidden?ps:pl).children[f];if(!box)return;const r=box.getBoundingClientRect(),e=document.createElement('div');e.className='bub';
+ if(EM.includes(n))e.textContent=n;else if(AS.emotes.includes(n))e.innerHTML=`<img src="emotes/${encodeURIComponent(n)}" alt="">`;else return;
+ e.style.left=r.left+r.width/2+'px';e.style.top=r.top+'px';document.body.append(e);setTimeout(()=>e.remove(),2700)}
+function onFx(m){const n=String(m.n);if(m.k==='e')return bubble(m.f,n);
+ if(sbMute||mute)return;ac();
+ if(SY[n])SY[n]();else if(AS.sounds.includes(n))playFile(n).catch(()=>{});else return;
+ toast(((LB&&LB.players[m.f])||{}).n+' · '+nice(n))}
+function panel(k){const o=!pn.hidden&&pn.dataset.k===k;pn.hidden=o;if(o)return;pn.dataset.k=k;
+ pn.innerHTML=k==='e'?`<div class=pg>${[...EM,...AS.emotes].map(n=>`<button data-e="${esc(n)}">${EM.includes(n)?n:`<img src="emotes/${encodeURIComponent(n)}" alt="">`}</button>`).join('')}</div>`:`<button class=g data-m=1>${sbMute?'Unmute':'Mute'} everyone's sounds</button><div class=pg>${[...Object.keys(SY),...AS.sounds].map(n=>`<button class=sb data-s="${esc(n)}">${esc(nice(n))}</button>`).join('')}</div>`}
+function drawOpts(h){const o=LB.opt||{};
+ op.innerHTML=`<p class=mu>Host options${h?'':' · view only'}</p>`+[['pw','Win with a power card'],['dr','Draw until playable'],['un','UNO button']].map(([k,t])=>`<div class=ot><span>${t}</span><button type=button data-o=${k}${o[k]?'':' class=g'}${h?'':' disabled'}>${o[k]?'On':'Off'}</button></div>`).join('')+`<div class=ot><span>Soundboard cooldown</span><button type=button class=g data-o=sb${h?'':' disabled'}>${o.sb?o.sb+'s':'Off'}</button></div>`}
+function callOut(i){if(S&&S.win<0&&S.o.un&&i!==me&&!S.out[i]&&S.h[i].length===1&&!S.un[i])tx({t:'call',i})}
+op.onclick=e=>{const b=e.target.closest('[data-o]');if(!b||!LB||LB.host!==myName)return;const k=b.dataset.o,o=LB.opt||{};tx({t:'opt',k,v:k==='sb'?SBV[(SBV.indexOf(o.sb)+1)%4]:+!o[k]})};
+pn.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.m){sbMute=!sbMute;sv('sbm',sbMute?1:0);b.textContent=(sbMute?'Unmute':'Mute')+" everyone's sounds";return}
+ const k=b.dataset.e!=null?'e':'s',n=k==='e'?b.dataset.e:b.dataset.s,sb=(LB&&LB.opt||{}).sb;
+ if(k==='s'&&!sb)return toast('Soundboard is off');
+ if(Date.now()-fxAt<(k==='s'?sb*1000:1500))return toast('Easy — wait a moment');
+ fxAt=Date.now();tx({t:'fx',k,n});pn.hidden=true};
+be.onclick=()=>panel('e');bs.onclick=()=>panel('s');
+bl.onclick=()=>{if(S&&S.win<0&&!S.out[me]&&!confirm('Leave the match?'))return;tx({t:'leave'});setTimeout(()=>location.href=location.pathname,200)};
+ub.onclick=()=>tx({t:'uno'});
+buildIntro();
 setInterval(()=>tx({t:'p'}),25000);
 conn();
 </script>
