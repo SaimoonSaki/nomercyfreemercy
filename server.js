@@ -1,6 +1,13 @@
 const http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
+const MT={png:'image/png',webp:'image/webp',jpg:'image/jpeg',jpeg:'image/jpeg',svg:'image/svg+xml',gif:'image/gif'};
 const srv=http.createServer((q,r)=>{
-  if(q.url==='/favicon.ico'){r.writeHead(204);return r.end()}
+  let u='';try{u=decodeURIComponent(q.url.split('?')[0])}catch{}
+  if(u.startsWith('/cards/')){
+    const f=path.join(__dirname,'cards',path.basename(u)),e=path.extname(f).slice(1).toLowerCase();
+    return fs.readFile(f,(er,d)=>{
+      if(er||!MT[e]){r.writeHead(404);return r.end()}
+      r.writeHead(200,{'content-type':MT[e],'cache-control':'public,max-age=600'});r.end(d)})}
+  if(u==='/favicon.ico'){r.writeHead(204);return r.end()}
   r.writeHead(200,{'content-type':'text/html;charset=utf-8'});r.end(fs.readFileSync(path.join(__dirname,'index.html')))});
 const wss=new WebSocketServer({server:srv,maxPayload:32768}),rooms={},MAX=8;
 const tx=(w,m)=>w&&w.readyState===1&&w.send(JSON.stringify(m));
@@ -11,7 +18,7 @@ const kind=i=>i<152?(i%38<20?(i%38)>>1:10+((i%38-20)/3|0)):16+((i-152)>>2);
 function deal(R){
   const dk=shuf([...Array(168).keys()]),h=R.p.map(()=>dk.splice(0,7));
   const top=dk.splice(dk.findIndex(i=>kind(i)<10),1)[0];
-  R.s={pl:R.p.map(p=>({n:p.n,c:p.c})),h,dk,ds:[top],t:0,d:1,col:top/38|0,st:0,out:R.p.map(()=>0),pd:null,win:-1,v:0}}
+  R.s={pl:R.p.map(p=>({n:p.n,c:p.c})),h,dk,ds:[top],t:0,d:1,col:top/38|0,st:0,out:R.p.map(()=>0),eo:[],lg:[],pd:null,win:-1,v:0}}
 wss.on('connection',w=>{
   let R,me;
   w.on('message',d=>{
