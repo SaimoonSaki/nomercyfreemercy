@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang=en>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name=theme-color content=#0b1120>
+<meta name=apple-mobile-web-app-capable content=yes>
+<title>Uno No Mercy</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{margin:0;min-height:100dvh;background:radial-gradient(120% 80% at 50% 0,#1e293b,#0b1120) fixed;color:#e2e8f0;font:16px/1.4 system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);-webkit-user-select:none;user-select:none}
+main{max-width:560px;margin:0 auto;padding:12px 0}
+section{display:flex;flex-direction:column;gap:12px}
+[hidden]{display:none!important}
+h1{margin:8px 0 0;text-align:center;font-size:52px;line-height:1.1;letter-spacing:2px;background:linear-gradient(90deg,#ef4444,#eab308,#22c55e,#3b82f6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mu{color:#94a3b8;font-size:14px;text-align:center;margin:0}
+.card{background:#1e293bd9;border:1px solid #ffffff1a;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+input{font:inherit;font-size:18px;padding:14px 16px;border-radius:14px;border:1px solid #334155;background:#0f172a;color:#fff;width:100%;outline:0;-webkit-user-select:text;user-select:text}
+input:focus{border-color:#60a5fa}
+#rc{text-transform:uppercase;letter-spacing:6px;text-align:center;font-weight:700}
+.row{display:flex;gap:10px;align-items:center}
+button{font:inherit;font-weight:700;border:0;border-radius:14px;padding:14px;color:#fff;background:linear-gradient(135deg,#6366f1,#3b82f6);cursor:pointer}
+.g{background:#334155;font-weight:600}
+#sw{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#sw button{width:40px;height:40px;padding:0;border-radius:50%;border:3px solid transparent;opacity:.5}
+#sw .on{border-color:#fff;opacity:1;transform:scale(1.12)}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block}
+#ps{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.chip{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;background:#1e293b;font-size:14px;border:2px solid transparent}
+.turn{border-color:#fff}.out{opacity:.35;text-decoration:line-through}
+.pk{border-color:#22c55e;cursor:pointer;animation:p .6s infinite alternate}
+@keyframes p{to{opacity:.5}}
+#mid{display:flex;align-items:center;justify-content:center;gap:22px;padding:8px 0}
+#dkw{text-align:center;cursor:pointer}#dkw small{display:block;color:#94a3b8;font-size:12px;margin-top:4px}
+#inf{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:24px;font-weight:800;min-width:48px}
+.st{color:#f43f5e}
+#tb{text-align:center;font-weight:700;min-height:26px}
+#hand{display:flex;gap:8px;overflow-x:auto;padding:20px 6px 10px;min-height:136px;-webkit-overflow-scrolling:touch}
+.cd{position:relative;flex:none;width:62px;height:94px;border-radius:11px;background:var(--c);border:3px solid #fff;display:grid;place-items:center;color:#fff;font-weight:800;box-shadow:0 3px 8px #0007;transition:transform .12s}
+.cd b{font-size:24px;text-shadow:0 2px 3px #0006;white-space:nowrap}
+.cd::before,.cd::after{content:attr(data-s);position:absolute;font-size:11px}
+.cd::before{top:3px;left:5px}.cd::after{bottom:3px;right:5px;transform:rotate(180deg)}
+.w{background:conic-gradient(#ef4444 0 25%,#eab308 0 50%,#22c55e 0 75%,#3b82f6 0)}
+.w b{background:#000a;border-radius:12px;padding:1px 6px;font-size:18px}
+.big{width:84px;height:126px}.big b{font-size:32px}.big.w b{font-size:24px}
+.bk{background:#111;border-color:#ef4444}.bk b{color:#ef4444;font-size:20px;font-style:italic}
+.ok{transform:translateY(-14px);box-shadow:0 0 0 3px #fff,0 8px 16px #000a}
+.no{opacity:.5}
+.ovl{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}
+.ovl .card{text-align:center;min-width:260px}
+.pal{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pal button{height:64px;border-radius:16px}
+#ts{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#ef4444;color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;white-space:nowrap;z-index:9}
+</style>
+<main>
+<section id=home>
+<h1>UNO</h1>
+<p class=mu>No Mercy · no ads · no accounts</p>
+<form id=f class=card autocomplete=off>
+<input id=nm placeholder="Your nickname" maxlength=12 required>
+<div id=sw></div>
+<div class=row><input id=rc placeholder=CODE maxlength=6 required><button type=button id=rn class=g title="Random code">🎲</button></div>
+<button>Join / create room</button>
+<p class=mu>Stack draw cards · 7 swaps hands · 0 passes hands · 25 cards = out</p>
+</form>
+</section>
+<section id=lobby hidden>
+<h1 style="font-size:40px">Room <span id=lc></span></h1>
+<div class=card id=pl></div>
+<p class=mu id=wt></p>
+<button id=go>Start game</button>
+<button id=cs class=g>Share invite link</button>
+<button id=lv class=g>Leave</button>
+</section>
+<section id=game hidden>
+<div id=ps></div>
+<div id=mid><div id=dkw><div class="cd bk" data-s=""><b>UNO</b></div><small id=dn></small></div><div id=ds></div><div id=inf></div></div>
+<div id=tb></div>
+<div id=hand></div>
+</section>
+</main>
+<div id=cp class=ovl hidden><div class=card><b>Pick a color</b><div class=pal><button style="background:#ef4444" data-c=0></button><button style="background:#eab308" data-c=1></button><button style="background:#22c55e" data-c=2></button><button style="background:#3b82f6" data-c=3></button></div></div></div>
+<div id=ov class=ovl hidden><div class=card><div id=wn style="font-size:28px;font-weight:800"></div><button id=ag>Play again</button><p class=mu id=aw></p></div></div>
+<div id=ts hidden></div>
+<script>
+const CC=['#ef4444','#eab308','#22c55e','#3b82f6'],
+AV=['#f43f5e','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#8b5cf6','#ec4899'],
+LBL=['0','1','2','3','4','5','6','7','8','9','+2','+4','⇄','⊘','⊘⊘','✕','⇄+4','+6','+10','?'],
+DV={10:2,11:4,16:4,17:6,18:10},
+$=i=>document.getElementById(i),
+esc=s=>s.replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
+ld=k=>{try{return localStorage[k]||''}catch{return''}},
+sv=(k,v)=>{try{localStorage[k]=v}catch{}},
+info=i=>i<152?[i/38|0,i%38<20?(i%38)>>1:10+((i%38-20)/3|0)]:[4,16+((i-152)>>2)],
+shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},
+clone=s=>JSON.parse(JSON.stringify(s)),
+tp=s=>s.ds[s.ds.length-1],
+can=(s,id)=>{const[c,k]=info(id),tk=info(tp(s))[1];if(s.st>0)return DV[k]>=DV[tk];return c>3||c===s.col||k===tk},
+alive=s=>s.out.map((o,i)=>o?-1:i).filter(i=>i>=0),
+adv=(s,n=1)=>{for(let k=0;k<n;k++){do{s.t=(s.t+s.d+s.pl.length)%s.pl.length}while(s.out[s.t])}},
+dr=(s,p)=>{if(!s.dk.length){const t=s.ds.pop();s.dk=shuf(s.ds);s.ds=[t]}if(!s.dk.length)return -1;const c=s.dk.pop();s.h[p].push(c);return c},
+mercy=s=>{s.h.forEach((h,i)=>{if(!s.out[i]&&h.length>=25){s.out[i]=1;s.dk.unshift(...h);s.h[i]=[]}});const a=alive(s);if(a.length===1)s.win=a[0]},
+card=(i,x='')=>{const[c,k]=info(i),s=LBL[k];return`<div class="cd${c>3?' w':''} ${x}" style="--c:${CC[c]}" data-i=${i} data-s="${s}"><b>${s}</b></div>`};
+let ws,me=-1,myName='',S=null,LB=null,joined=null,busy=0,tt,pref=+ld('col')||0;
+const tx=m=>ws.readyState===1&&(ws.send(JSON.stringify(m)),1),
+toast=m=>{ts.textContent=m;ts.hidden=false;clearTimeout(tt);tt=setTimeout(()=>ts.hidden=true,2500)},
+view=()=>{const v=me<0?'home':S&&LB&&LB.started?'game':'lobby';['home','lobby','game'].forEach(x=>$(x).hidden=x!==v)};
+
+function send(s){s.v++;if(tx({t:'state',s})){busy=1;setTimeout(()=>busy=0,2500)}}
+function play(id){const s0=S;if(!s0||s0.win>=0||busy||s0.t!==me||s0.pd||!(s0.h[me]||[]).includes(id)||!can(s0,id))return;
+ const s=clone(s0),h=s.h[me],[c,k]=info(id);let n=1;
+ h.splice(h.indexOf(id),1);s.ds.push(id);if(c<4)s.col=c;
+ if(k===15){const rm=h.filter(x=>info(x)[0]===c);s.h[me]=h.filter(x=>info(x)[0]!==c);s.ds.splice(s.ds.length-1,0,...rm)}
+ if(!s.h[me].length){s.win=me;return send(s)}
+ if(DV[k])s.st+=DV[k];
+ if(k===12||k===16)s.d=-s.d;
+ if(k===12&&alive(s).length===2)n=0;
+ if(k===13)n=2;
+ if(k===14)n=0;
+ if(c===4&&k!==19){s.pd='c';n=0}
+ if(k===7){s.pd='7';n=0}
+ if(k===0){const a=alive(s),o=a.map(i=>s.h[i]);a.forEach((i,j)=>s.h[a[(j+s.d+a.length)%a.length]]=o[j])}
+ if(k===19){adv(s,1);s.pd='r';n=0}
+ mercy(s);if(s.win<0)adv(s,n);
+ send(s)}
+function draw(){const s0=S;if(!s0||s0.win>=0||busy||s0.t!==me||s0.pd)return;
+ const s=clone(s0);
+ if(s.st>0){for(let i=0;i<s.st;i++)dr(s,me);s.st=0;mercy(s);if(s.win<0)adv(s,1)}
+ else{if(s.h[me].some(x=>can(s,x)))return toast('You have a card to play');
+  for(let g=0;g<200;g++){const x=dr(s,me);if(x<0||can(s,x))break}
+  mercy(s);if(s.win<0&&(s.out[me]||!s.h[me].some(x=>can(s,x))))adv(s,1)}
+ send(s)}
+function pickColor(c){const s=clone(S);if(busy||s.t!==me||(s.pd!=='c'&&s.pd!=='r'))return;
+ s.col=c;
+ if(s.pd==='c'){s.pd=null;adv(s,1)}
+ else{s.pd=null;for(let g=0;g<200;g++){const x=dr(s,me);if(x<0||info(x)[0]===c)break}mercy(s);if(s.win<0)adv(s,1)}
+ send(s)}
+function pickPlayer(q){const s=clone(S);if(busy||s.t!==me||s.pd!=='7'||q===me||s.out[q])return;
+ [s.h[me],s.h[q]]=[s.h[q],s.h[me]];s.pd=null;mercy(s);if(s.win<0)adv(s,1);send(s)}
+
+function render(){const H=S.h[me]||[],my=S.t===me&&S.win<0,pd=S.pd;
+ ps.innerHTML=S.pl.map((p,i)=>`<div class="chip${i===S.t&&S.win<0?' turn':''}${S.out[i]?' out':''}${my&&pd==='7'&&i!==me&&!S.out[i]?' pk':''}" data-p=${i}><span class=dot style="background:${AV[p.c]}"></span>${esc(p.n)}${i===me?' (you)':''} <b>${S.out[i]?'out':S.h[i].length===1?'UNO!':S.h[i].length}</b></div>`).join('');
+ ds.innerHTML=card(tp(S),'big');dn.textContent=S.dk.length+' left';
+ inf.innerHTML=`<span class=dot style="background:${CC[S.col]};width:24px;height:24px"></span><span>${S.d>0?'↻':'↺'}</span>${S.st?`<span class=st>+${S.st}</span>`:''}`;
+ hand.innerHTML=[...H].sort((a,b)=>a-b).map(i=>card(i,my&&!pd&&can(S,i)?'ok':'no')).join('');
+ tb.innerHTML=S.win>=0?'Game over':my?(pd==='c'?'Pick a color':pd==='7'?'Tap a player to swap hands':pd==='r'?'Color Roulette! Pick a color':S.st?`Stack a same-or-bigger draw card, or tap the deck to take ${S.st}`:H.some(i=>can(S,i))?'Your turn — play a card':'Nothing to play — tap the deck'):esc(S.pl[S.t].n)+'’s turn'+(pd?'…':'');
+ cp.hidden=!(my&&(pd==='c'||pd==='r'));
+ ov.hidden=S.win<0;
+ if(S.win>=0){wn.textContent='🏆 '+S.pl[S.win].n+' wins!';const h=LB&&LB.host===myName;ag.hidden=!h;aw.textContent=h?'':'Waiting for the host…'}}
+function onState(s){busy=0;S=s;view();render()}
+function drawLobby(){
+ pl.innerHTML=LB.players.map(p=>`<div class=row style="opacity:${p.on?1:.45}"><span class=dot style="background:${AV[p.c]}"></span><b>${esc(p.n)}</b><span class=mu>${p.n===LB.host?'host':''}${p.n===myName?' · you':''}</span></div>`).join('');
+ const h=LB.host===myName;go.hidden=!(h&&LB.players.length>1);
+ wt.textContent=h?(LB.players.length>1?'':'Waiting for friends to join…'):'Waiting for the host to start…'}
+
+function conn(){ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+ ws.onopen=()=>joined&&tx({t:'join',...joined});
+ ws.onclose=()=>setTimeout(conn,800);
+ ws.onmessage=e=>{const m=JSON.parse(e.data);
+  if(m.t==='hi'){me=m.i;myName=m.n;lc.textContent=m.room;history.replaceState(0,'','?r='+m.room);view()}
+  else if(m.t==='lobby'){LB=m;drawLobby();view();if(S&&LB.started)render()}
+  else if(m.t==='state')onState(m.s);
+  else if(m.t==='err'){toast(m.m);joined=null;me=-1;view()}}}
+
+nm.value=ld('nm');
+rc.value=((new URLSearchParams(location.search).get('r')||ld('rc'))+'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+rc.oninput=()=>rc.value=rc.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+rn.onclick=()=>rc.value=[...Array(4)].map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join('');
+sw.innerHTML=AV.map(x=>`<button type=button style="background:${x}"></button>`).join('');
+const pick=i=>{pref=i;[...sw.children].forEach((b,j)=>b.classList.toggle('on',i===j))};
+[...sw.children].forEach((b,i)=>b.onclick=()=>pick(i));pick(pref);
+f.onsubmit=e=>{e.preventDefault();const name=nm.value.trim(),room=rc.value.trim();if(!name||!room)return;
+ sv('nm',name);sv('col',pref);sv('rc',room);joined={name,room,color:pref};
+ if(!tx({t:'join',...joined}))toast('Connecting… the server may be waking up')};
+go.onclick=ag.onclick=()=>tx({t:'start'});
+cs.onclick=()=>navigator.share?navigator.share({title:'Uno No Mercy',text:'Join my Uno room '+lc.textContent,url:location.href}).catch(()=>{}):navigator.clipboard.writeText(location.href).then(()=>toast('Link copied'));
+lv.onclick=()=>location.href=location.pathname;
+ps.onclick=e=>{const el=e.target.closest('[data-p]');if(el)pickPlayer(+el.dataset.p)};
+hand.onclick=e=>{const el=e.target.closest('.cd');if(el)play(+el.dataset.i)};
+dkw.onclick=draw;
+cp.onclick=e=>{const b=e.target.closest('[data-c]');if(b)pickColor(+b.dataset.c)};
+document.onvisibilitychange=()=>{if(!document.hidden)try{ws.close()}catch{}};
+setInterval(()=>tx({t:'p'}),25000);
+conn();
+</script>
